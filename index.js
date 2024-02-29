@@ -12,22 +12,25 @@ app.use(require('morgan')('dev'));
 // all flavors
 app.get('/api/flavors', async (req, res, next) => {
     try{
-        const SQL = `SELECT * FROM flavors ORDER BY created_at DESC;`
+        const SQL = `SELECT * FROM flavors;`
         const response = await client.query(SQL);
         res.send(response.rows);
-    } catch (ex){
-        next(ex);
+    } catch (error){
+        next(error);
     }
 });
 
 // single flavor
-app.get('/api/flavors:id', async (req, res, next) => {
+app.get('/api/flavors/:id', async (req, res, next) => {
     try{
-        const SQL = `SELECT * FROM flavors WHERE id=$1;`
+        const SQL = `
+            SELECT * FROM flavors
+            WHERE id = $1
+            `
         const response = await client.query(SQL, [req.params.id]);
         res.send(response.rows);
-    } catch (ex){
-        next(ex);
+    } catch (error){
+        next(error);
     }
 });
 
@@ -41,8 +44,8 @@ app.post('/api/flavors', async (req, res, next) => {
         `
         const response = await client.query(SQL, [req.body.name])
         res.send(response.rows[0])
-    } catch (ex) {
-        next(ex)
+    } catch (error) {
+        next(error)
     }
 });
 
@@ -57,8 +60,8 @@ app.put('/api/flavors/:id', async (req, res, next) => {
         `
         const response = await client.query(SQL, [req.body.name, req.body.is_favorite, req.params.id])
         res.send(response.rows[0])
-    } catch (ex) {
-        next(ex)
+    } catch (error) {
+        next(error)
     }
 });
 
@@ -72,8 +75,8 @@ app.delete('/api/flavors/:id', async (req, res, next) => {
         `
         const response = await client.query(SQL, [req.params.id])
         res.sendStatus(204)
-    } catch (ex) {
-        next(ex)
+    } catch (error) {
+        next(error)
     }
 });
 
