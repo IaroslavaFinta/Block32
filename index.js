@@ -1,8 +1,7 @@
 // Import packages
 const pg = require('pg')
 const express = require('express')
-const client = new pg.Client(process.env.DATABASE_URL ||
-    'postgres://localhost/the_acme_shop_db')
+const client = new pg.Client(process.env.DATABASE_URL || 'postgres://localhost/the_acme_shop_db')
 const app = express()
 
 // routes
@@ -13,7 +12,7 @@ app.use(require('morgan')('dev'));
 // all flavors
 app.get('/api/flavors', async (req, res, next) => {
     try{
-        const SQL = `SELECT * FROM flavors ORDER BY created_at DESC;`;
+        const SQL = `SELECT * FROM flavors ORDER BY created_at DESC;`
         const response = await client.query(SQL);
         res.send(response.rows);
     } catch (ex){
@@ -24,8 +23,11 @@ app.get('/api/flavors', async (req, res, next) => {
 // single flavor
 app.get('/api/flavors:id', async (req, res, next) => {
     try{
-        const SQL = `SELECT * FROM flavors ORDER BY created_at DESC;`;
-        const response = await client.query(SQL);
+        const SQL = `
+            SELECT * FROM flavors
+            WHERE id = $1
+        `
+        const response = await client.query(SQL, [req.params.id]);
         res.send(response.rows);
     } catch (ex){
         next(ex);
@@ -52,8 +54,9 @@ app.put('/api/flavors/:id', async (req, res, next) => {
     try {
         const SQL = `
             UPDATE flavors
-            SET name=$1, is_favorite=true, updated_at= now()
-            WHERE id=$3 RETURNING *
+            SET name=$1, is_favorite=$2, updated_at= now()
+            WHERE id=$3 
+            RETURNING *
         `
         const response = await client.query(SQL, [req.body.name, req.body.is_favorite, req.params.id])
         res.send(response.rows[0])
@@ -67,7 +70,7 @@ app.put('/api/flavors/:id', async (req, res, next) => {
 app.delete('/api/flavors/:id', async (req, res, next) => {
     try {
         const SQL = `
-            DELETE FROM flavors
+            DELETE from flavors
             WHERE id = $1
         `
         const response = await client.query(SQL, [req.params.id])
@@ -88,7 +91,7 @@ const init = async() => {
             name VARCHAR(255),
             is_favorite BOOLEAN DEFAULT false,
             created_at TIMESTAMP DEFAULT now(),
-            updated_at TIMESTAMP DEFAULT now(),
+            updated_at TIMESTAMP DEFAULT now()
         )
     `;
     await client.query(SQL);
@@ -107,6 +110,6 @@ const init = async() => {
     const PORT = process.env.PORT || 3000;
     app.listen(PORT, () => console.log(`listening on port ${PORT}`)
     )
-}
+};
 
 init();
